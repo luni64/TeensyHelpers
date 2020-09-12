@@ -1,6 +1,6 @@
-This repo contains extended versions for the Teensy IntervalTimer class and the attachInterrupt function. In both cases, instead of the standard void(*)() callbacks `std::function` type callbacks can be attached (see examples below);
+This repo contains extended versions for the Teensy IntervalTimer class and the attachInterrupt function. In both cases, instead of the standard `void(*)()` callbacks `std::function` type callbacks can be attached (see examples below). It also contains an overloaded version of the pinMode function witch can set the pin mode for a arbitray long list of pins. 
 
-IntervalTimerEx and attachInterruptEx both use the underlying Teensyduino mechanisms and bookkeeping. They can mixed with the standard ones.
+**All functions and classes use the underlying Teensyduino mechanisms and bookkeeping. They can mixed with the standard ones.**
 
 ### Installation:
 I didn't bother to make this a library. To use it just copy the `*.h` and  `*.cpp` files from the corresponding  subfolders of `/src` into your sketch to use them.
@@ -128,8 +128,9 @@ void loop(){
 ```
 
 ## pinModeEx
-One often has to define the pin mode for a bunch of pins wich is a bit tedious. In the folder `src/pinModeEx` you find an overloaded version of the `pinMode` function which allows to set the mode for an arbitrary large list of pins.
+One often has to define the pin mode for a bunch of pins which can be a bit tedious. In the folder `src/pinModeEx` you find an overloaded version of the `pinMode` function which allows to set the mode for an arbitrary large list of pins.
 
+Usage:
 ```c++
 #include "pinModeEx.h"
 
