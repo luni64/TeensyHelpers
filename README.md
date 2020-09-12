@@ -5,6 +5,13 @@ IntervalTimerEx and attachInterruptEx both use the underlying Teensyduino mechan
 ### Installation:
 I didn't bother to make this a library. To use it just copy the `*.h` and  `*.cpp` files from the corresponding  subfolders of `/src` into your sketch to use them.
 
+### Content
+- [IntervalTimerEx](#intervaltimerex)
+- [attachInterruptEx](#attachinteruptex)
+- [pinModeEx](#pinModeEx)
+
+-----
+
 ## IntervalTimerEx
 
 Usage is exactly the same as with the normal IntervalTimer. However, it accepts more or less anything witch can be called (functions, member functions, lambdas, functors) as callbacks.
@@ -118,4 +125,19 @@ void loop(){
     delay(250);
 }
 
+```
+
+## pinModeEx
+One often has to define the pin mode for a bunch of pins wich is a bit tedious. In the folder `src/pinModeEx` you find an overloaded version of the `pinMode` function which allows to set the mode for an arbitrary large list of pins.
+
+```c++
+#include "pinModeEx.h"
+
+const int pinA = 3, pinB = 17, switch1 = 3, switch2 = 4;
+
+void setup()
+{
+    pinMode({pinA, pinB, 17, LED_BUILTIN}, OUTPUT);  // set a bunch of pins to mode OUTPUT...
+    pinMode({switch1, switch2}, INPUT_PULLUP);       // others to INPUT
+}
 ```
