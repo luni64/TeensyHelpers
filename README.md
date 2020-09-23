@@ -1,22 +1,36 @@
-This repo contains extended versions for the Teensy IntervalTimer class and the attachInterrupt function. In both cases, instead of the standard `void(*)()` callbacks `std::function` type callbacks can be attached (see examples below). It also contains an overloaded version of the pinMode function witch can set the pin mode for a arbitray long list of pins. 
+This repo contains some useful helper functions and classes for the PJRC Teensy boards:
+
+# Content
+- [IntervalTimerEx](#intervaltimerex)\
+    Subclasses the standard IntervalTimer to allow passing state to callbacks. You can choose between attaching `std::function<void()>` callbacks or the traditional void pointer pattern.
+- [attachInterruptEx](#attachinteruptex)\
+    Overloads the attachInterrupt function to allow attaching `std::function<void()>` callbacks.
+
+- [pinModeEx](#pinModeEx)
+  Overloaded version of the pinMode function witch can set the pin mode for a arbitrary long list of pins.
 
 **All functions and classes use the underlying Teensyduino mechanisms and bookkeeping. They can mixed with the standard ones.**
 
-### Installation:
+# Installation:
 I didn't bother to make this a library. To use it just copy the `*.h` and  `*.cpp` files from the corresponding  subfolders of `/src` into your sketch to use them.
 
-### Content
-- [IntervalTimerEx](#intervaltimerex)
-- [attachInterruptEx](#attachinteruptex)
-- [pinModeEx](#pinModeEx)
 
 -----
 
-## IntervalTimerEx
+# IntervalTimerEx
 
+The header contains a preprocessor switch to choose between the traditional void pointer pattern to pass state to callbacks and the more modern `std::function` approach.
+
+- **`std::function` approach:**\
 Usage is exactly the same as with the normal IntervalTimer. However, it accepts more or less anything witch can be called (functions, member functions, lambdas, functors) as callbacks.
 
-## Examples:
+- **Traditional void pointer approach:**\
+Might be more familiar to some users. Uses less resources, doesn't use dynamic memory.
+
+# Examples:
+
+## **std::function approach**
+
 ```c++
 #include "IntervalTimerEx.h"
 
@@ -50,33 +64,74 @@ void loop(){
 ```c++
 #include "IntervalTimerEx.h"
 
-class Blinker
+class DeepThougth
 {
  public:
-    void begin(float seconds)
+    void begin()
     {
-        pinMode(LED_BUILTIN, OUTPUT);
-        timer.begin([this] { this->blink(); }, seconds * 1E6); // attach member function
+        answer = 42;
+        t1.begin([this] { ISR(); }, 7.5E6);  // 7.5s
     }
 
  protected:
-    IntervalTimerEx timer;
+    IntervalTimerEx t1;
+    int answer;
 
-    void blink()
+    void ISR()
     {
-        digitalToggleFast(LED_BUILTIN);
+        Serial.printf("The answer is %d\n", answer);
     }
 };
 
 //----------------------------
 
-Blinker blinker;
+DeepThougth deepThougth;
 
-void setup(){
-    blinker.begin(0.1);  // start the blinker
+void setup()
+{
+    deepThougth.begin();
 }
 
-void loop(){
+void loop()
+{
+}
+```
+
+## Traditional void pointer approach:
+
+Uncomment the preprocessor switch in the `IntervalTimerEx.h` header.
+
+### Embedding in a user class
+```c++
+class DeepThougth
+{
+ public:
+    void begin()
+    {
+        answer = 42;
+        t1.begin(ISR, this, 7.5E6); // 7.5s
+    }
+
+ protected:
+    IntervalTimerEx t1;
+    int answer;
+
+    static void ISR(void* state)
+    {
+        DeepThougth* THIS = (DeepThougth*)state;
+        Serial.printf("The answer is %d\n", THIS->answer);
+    }
+};
+
+DeepThougth deepThougth;
+
+void setup()
+{
+    deepThougth.begin();
+}
+
+void loop()
+{
 }
 ```
 
@@ -127,7 +182,7 @@ void loop(){
 
 ```
 
-## pinModeEx
+# pinModeEx
 One often has to define the pin mode for a bunch of pins which can be a bit tedious. In the folder `src/pinModeEx` you find an overloaded version of the `pinMode` function which allows to set the mode for an arbitrary large list of pins.
 
 Usage:
