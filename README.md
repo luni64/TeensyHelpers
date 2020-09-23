@@ -3,11 +3,15 @@ This repo contains some useful helper functions and classes for the PJRC Teensy 
 # Content
 - [IntervalTimerEx](#intervaltimerex)\
     Subclasses the standard IntervalTimer to allow passing state to callbacks. You can choose between attaching `std::function<void()>` callbacks or the traditional void pointer pattern.
-- [attachInterruptEx](#attachinteruptex)\
+
+- [attachInterruptEx](#attachinterruptex)\
     Overloads the attachInterrupt function to allow attaching `std::function<void()>` callbacks.
 
 - [pinModeEx](#pinModeEx)
   Overloaded version of the pinMode function witch can set the pin mode for a arbitrary long list of pins.
+
+- [attachYieldFunc](#attachyieldfunc)
+  Add your own function to the yield call stack
 
 **All functions and classes use the underlying Teensyduino mechanisms and bookkeeping. They can mixed with the standard ones.**
 
@@ -195,5 +199,37 @@ void setup()
 {
     pinMode({pinA, pinB, 17, LED_BUILTIN}, OUTPUT);  // set a bunch of pins to mode OUTPUT...
     pinMode({switch1, switch2}, INPUT_PULLUP);       // others to INPUT
+}
+```
+
+# attachYieldFunc()
+
+Sometimes your have code that needs to be called by the user as often as possible. Prominent examples are AccelStepper where you are required to call `run()` at high speed. Using the debounce library, you need to call `update()`. The PID library requires a frequent call to `Compute()` and so on.
+
+Usually, the user of these libraries just calls these functions in loop which works fine for simple code. As soon as there is longer running code or some delays in loop the call rate of these functions can get unacceptably low and the libraries don't work as expected.
+
+### Yield
+Teensyduino provides a yield() function which is called before each call to loop(), during delay() and probably a lot of other long running core functions while they spin.
+
+If you want to add your own functions to be called from yield you can use `attachYieldFunc(callback)` which is defined in the `src/attachYieldFunc` folder of the repository. Here an Example which will toggle pin 0 at high frequency in the background. The `delay(250)` in loop does disturb the high frequency toggling since it calls yield while it delays.
+
+```c++
+void myCallback() //will be called from yield
+{
+  digitalToggleFast(0);
+}
+
+void setup()
+{
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(0,OUTPUT);
+
+  attachYieldFunc(myCallback); // attach our callback to the yield stack
+}
+
+void loop()
+{
+  digitalToggleFast(LED_BUILTIN);
+  delay(250);
 }
 ```
