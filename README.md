@@ -1,4 +1,4 @@
-This repo contains some useful helper functions and classes for the PJRC Teensy boards:
+This repository contains some helper functions and classes for the PJRC Teensy boards:
 
 # Content
 - [IntervalTimerEx](#intervaltimerex)\
@@ -92,13 +92,11 @@ class DeepThougth
 
 DeepThougth deepThougth;
 
-void setup()
-{
+void setup(){
     deepThougth.begin();
 }
 
-void loop()
-{
+void loop(){
 }
 ```
 
@@ -112,13 +110,12 @@ Comment out the preprocessor switch `#define USE_CPP11_CALLBACKS` in  `IntervalT
 
 // implement a one shot timer by using the timer address
 // passed to the callback
-
 void myCallback_1(void* state){
     IntervalTimer* timer = (IntervalTimer*)state;
     Serial.printf("Called @\t%d ms\n", millis());
     timer->end();
 }
-
+//------------------
 
 IntervalTimerEx t1;
 
@@ -162,13 +159,11 @@ class DeepThougth
 
 DeepThougth deepThougth;
 
-void setup()
-{
+void setup(){
     deepThougth.begin();
 }
 
-void loop()
-{
+void loop(){
 }
 ```
 
@@ -178,7 +173,7 @@ You can use `attachInterruptEx` in exactly the same as you use the standard `att
 
 ## Examples
 
-Shows how to embed and setup a pin interrupt callback function in a user class. The EdgeCounter class simply counts the edges it sees on a digital pin.  The pin number settable with the begin function.
+Shows how to encapsulate and setup a pin interrupt callback function in a user class. The EdgeCounter class simply counts all edges (rising/falling) it sees on a digital pin.  The pin to be monitored is settable with the `begin()` function.
 
 ```c++
 #include "attachInterruptEx.h"
@@ -205,7 +200,7 @@ class EdgeCounter
 
 //-------------------------
 
-EdgeCounter ec1,ec2;
+EdgeCounter ec1, ec2;
 
 void setup(){
     ec1.begin(0);
@@ -228,8 +223,7 @@ Usage:
 
 const int pinA = 3, pinB = 17, switch1 = 3, switch2 = 4;
 
-void setup()
-{
+void setup(){
     pinMode({pinA, pinB, 17, LED_BUILTIN}, OUTPUT);  // set a bunch of pins to mode OUTPUT...
     pinMode({switch1, switch2}, INPUT_PULLUP);       // others to INPUT
 }
@@ -241,27 +235,27 @@ Sometimes your have code that needs to be called by the user as often as possibl
 
 Usually, the user of these libraries just calls these functions in loop which works fine for simple code. As soon as there is longer running code or some delays in loop the call rate of these functions can get unacceptably low and the libraries don't work as expected.
 
-### Yield
-Teensyduino provides a yield() function which is called before each call to loop(), during delay() and probably a lot of other long running core functions while they spin.
+### yield()
+Teensyduino provides a yield() function which is called before each call to loop(), during delay() and probably during a lot of other long running core functions while they spin. 
 
-If you want to add your own functions to be called from yield you can use `attachYieldFunc(callback)` which is defined in the `src/attachYieldFunc` folder of the repository. Here an Example which will toggle pin 0 at high frequency in the background. The `delay(250)` in loop does disturb the high frequency toggling since it calls yield while it delays.
+If you want to add your own functions to be called from yield without completely overriding it, you can use `attachYieldFunc(callback)` which is defined in the `src/attachYieldFunc` folder of the repository. 
+Here an example which will call `myCallback()` from yield to toggle pin 0 in the background. The `delay(250)` in loop does not disturb the high frequency background toggling since `delay()` calls yield while it spins.
 
 ```c++
-void myCallback() //will be called from yield
-{
+#include "attachYieldFunc.h"
+
+void myCallback(){ //will be called from yield
   digitalToggleFast(0);
 }
 
-void setup()
-{
+void setup(){
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(0,OUTPUT);
+  pinMode(0, OUTPUT);
 
   attachYieldFunc(myCallback); // attach our callback to the yield stack
 }
 
-void loop()
-{
+void loop(){
   digitalToggleFast(LED_BUILTIN);
   delay(250);
 }
