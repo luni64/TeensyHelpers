@@ -23,13 +23,14 @@ I didn't bother to make this a library. To use it just copy the `*.h` and  `*.cp
 
 # IntervalTimerEx
 
-The header contains a preprocessor switch to choose between the traditional void pointer pattern to pass state to callbacks and the more modern `std::function` approach.
+`IntervalTimerEx` subclasses the stock `IntervalTimer` so that you can
+pass state to the timer callbacks. IntervalTimerEx provides either a traditional `void(*)(void*)` pattern or, more modern `std::function<>` typed callbacks. You can choose which to use with a preprocessor switch in `IntervalTimer.h`
 
 - **`std::function` approach:**\
 Usage is exactly the same as with the normal IntervalTimer. However, it accepts more or less anything witch can be called (functions, member functions, lambdas, functors) as callbacks.
 
 - **Traditional void pointer approach:**\
-Might be more familiar to some users. Uses less resources, doesn't use dynamic memory.
+Might be more familiar to some users. Uses less resources, doesn't use dynamic memory. You define the state which is passed to the callback function in `IntervalTimer.begin()`.
 
 # Examples:
 
@@ -103,9 +104,41 @@ void loop()
 
 ## Traditional void pointer approach:
 
-Uncomment the preprocessor switch in the `IntervalTimerEx.h` header.
+Comment out the preprocessor switch `#define USE_CPP11_CALLBACKS` in  `IntervalTimerEx.h` to use this pattern.
 
-### Embedding in a user class
+### One shot timer
+```c++
+#include "IntervalTimerEx.h"
+
+// implement a one shot timer by using the timer address
+// passed to the callback
+
+void myCallback_1(void* state){
+    IntervalTimer* timer = (IntervalTimer*)state;
+    Serial.printf("Called @\t%d ms\n", millis());
+    timer->end();
+}
+
+
+IntervalTimerEx t1;
+
+void setup(){
+    while(!Serial);
+    Serial.printf("Triggered @\t%d ms\n", millis());
+    t1.begin(myCallback_1, &t1, 200'000); // pass the address of the timer to the callback
+}
+
+void loop(){
+}
+```
+Output:
+```
+Triggered @	388 ms
+Called @	588 ms
+```
+
+
+### Embedding an IntervalTimer in a user class
 ```c++
 class DeepThougth
 {
@@ -120,9 +153,9 @@ class DeepThougth
     IntervalTimerEx t1;
     int answer;
 
-    static void ISR(void* state)
+    static void ISR(void* obj)
     {
-        DeepThougth* THIS = (DeepThougth*)state;
+        DeepThougth* THIS = (DeepThougth*)obj;
         Serial.printf("The answer is %d\n", THIS->answer);
     }
 };
@@ -141,7 +174,7 @@ void loop()
 
 # attachInterruptEx
 
-You can use it in exactly the same as you use the normal attachInterrupt function. However, it accepts more or less anything witch can be called (functions, member functions, lambdas, functors) as callbacks.
+You can use `attachInterruptEx` in exactly the same as you use the standard `attachInterrupt` function. However, it accepts more or less anything witch can be called (functions, member functions, lambdas, functors) as callbacks.
 
 ## Examples
 
