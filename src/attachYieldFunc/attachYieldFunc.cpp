@@ -1,6 +1,5 @@
 #include "attachYieldFunc.h"
-#include "Eventresponder.h"
-
+#include "EventResponder.h"
 
 void attachYieldFunc(yieldFunc_t _yieldFunc) // pass a pointer to the function you want to be called from yield
 {
