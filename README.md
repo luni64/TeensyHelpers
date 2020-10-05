@@ -8,7 +8,7 @@ This repository contains some helper functions and classes for the PJRC Teensy b
     Overloads the attachInterrupt function to allow attaching `std::function<void()>` callbacks.
 
 - [pinModeEx](#pinModeEx)
-  Overloaded version of the pinMode function witch can set the pin mode for a arbitrary long list of pins.
+  Overloaded version of the pinMode function which can set the pin mode for a arbitrary long list of pins.
 
 - [attachYieldFunc](#attachyieldfunc)
   Add your own function to the yield call stack
