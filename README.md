@@ -266,7 +266,7 @@ void loop(){
 
 # TeensySystemClock
 
-This extension enables the new (>c++11) `chrono::system_clock`. Usually the system_clock is fed by using some operating system calls. In embedded systems one simply needs to define the static function `chrono::system_clock::now()` to enable the clock.
+This extension enables the new (>c++11) `chrono::system_clock`. Usually the system_clock is fed by using some OS calls. In embedded systems one needs to define the static function `chrono::system_clock::now()` to enable the clock.
 
 The tiny code in the TeensySystemClock folder uses the built in RTC of the T4.x boards to feed the system_clock. It doesn't interfere with the normal use of the RTC functions and works with or without battery. Other than the usual Teensy RTC functions the system_clock uses the full resolution of the RTC which is 1/32768 kHz = 30.5 µs.
 
