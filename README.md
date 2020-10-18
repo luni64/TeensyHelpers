@@ -13,6 +13,9 @@ This repository contains some helper functions and classes for the PJRC Teensy b
 - [attachYieldFunc](#attachyieldfunc)
   Add your own function to the yield call stack
 
+- [TeensySystemClock](#teensysystemclock)
+  Use the new c++11 chrono::system_clock with T4.x. Uses the T4.x RTC to feed the system_clock. Works with/without battery and provides a clock resolution of 1/32678kHz = 30.5µs. Doesn't interfere with the standard use of the RTC.
+
 **All functions and classes use the underlying Teensyduino mechanisms and bookkeeping. They can mixed with the standard ones.**
 
 # Installation:
@@ -236,9 +239,9 @@ Sometimes your have code that needs to be called by the user as often as possibl
 Usually, the user of these libraries just calls these functions in loop which works fine for simple code. As soon as there is longer running code or some delays in loop the call rate of these functions can get unacceptably low and the libraries don't work as expected.
 
 ### yield()
-Teensyduino provides a yield() function which is called before each call to loop(), during delay() and probably during a lot of other long running core functions while they spin. 
+Teensyduino provides a yield() function which is called before each call to loop(), during delay() and probably during a lot of other long running core functions while they spin.
 
-If you want to add your own functions to be called from yield without completely overriding it, you can use `attachYieldFunc(callback)` which is defined in the `src/attachYieldFunc` folder of the repository. 
+If you want to add your own functions to be called from yield without completely overriding it, you can use `attachYieldFunc(callback)` which is defined in the `src/attachYieldFunc` folder of the repository.
 Here an example which will call `myCallback()` from yield to toggle pin 0 in the background. The `delay(250)` in loop does not disturb the high frequency background toggling since `delay()` calls yield while it spins.
 
 ```c++
@@ -259,4 +262,54 @@ void loop(){
   digitalToggleFast(LED_BUILTIN);
   delay(250);
 }
+```
+
+# TeensySystemClock
+
+This extension enables the new (>c++11) `chrono::system_clock`. Usually the system_clock is fed by using some operating system calls. In embedded systems one simply needs to define the static function `chrono::system_clock::now()` to enable the clock.
+
+The tiny code in the TeensySystemClock folder uses the built in RTC of the T4.x boards to feed the system_clock. It doesn't interfere with the normal use of the RTC functions and works with or without battery. Other than the usual Teensy RTC functions the system_clock uses the full resolution of the RTC which is 1/32768 kHz = 30.5 µs.
+
+Example:
+
+```c++
+#include <chrono>
+using namespace std::chrono;
+
+typedef system_clock::time_point timePoint;               // save typing...
+
+void setup(){
+    while(!Serial){}
+}
+
+void loop()
+{
+    timePoint start = system_clock::now();                // generate two time points 1234ms apart
+    delay(1234);
+    timePoint stop = system_clock::now();
+
+    nanoseconds  dt    = stop - start;                    // system clock has an underlying ns counter
+    milliseconds dt_ms = duration_cast<milliseconds>(dt); // cast dt to milliseconds (float)
+
+    Serial.printf("stop-start: %u ms\n", dt_ms.count());
+
+    time_t t = system_clock::to_time_t(start);            // convert the time_point 'start' to usual time_t
+    Serial.printf("Current Time: %s\n", ctime(&t));       // pretty print date/time
+}
+```
+
+Which prints out:
+```
+stop-start: 1234 ms
+Current Time: Sun Oct 18 21:01:37 2020
+
+stop-start: 1234 ms
+Current Time: Sun Oct 18 21:01:38 2020
+
+stop-start: 1234 ms
+Current Time: Sun Oct 18 21:01:39 2020
+
+stop-start: 1234 ms
+Current Time: Sun Oct 18 21:01:40 2020
+...
 ```
