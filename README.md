@@ -14,7 +14,7 @@ This repository contains some helper functions and classes for the PJRC Teensy b
   Add your own function to the yield call stack
 
 - [TeensySystemClock](#teensysystemclock)
-  Use the new c++11 chrono::system_clock with T4.x. Uses the T4.x RTC to feed the system_clock. Works with/without battery and provides a clock resolution of 1/32678kHz = 30.5µs. Doesn't interfere with the standard use of the RTC.
+  Use the new c++11 chrono::system_clock with T4.x. Uses the T4.x RTC to feed the system_clock. Works with/without battery and provides a clock resolution of 1/32678kHz = 30.5µs. 
 
 **All functions and classes use the underlying Teensyduino mechanisms and bookkeeping. They can mixed with the standard ones.**
 
