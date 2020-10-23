@@ -272,8 +272,8 @@ It uses a 64bit extension of the cycle counter where rollover is handled  by the
 
 The teensy_clock can be synced to the the built in RTC. It doesn't interfere with the normal use of the RTC functions and works with or without battery. Other than the usual Teensy RTC functions which are based on full seconds, the teensy_clock uses the full resolution of the cycle counter which is 1/600MHz = 1.6667 ns for a T4@ 600MHz.
 
-A full description of the code can be found in the Teensy User WIKI (
-https://github.com/TeensyUser/doc/wiki/durations-timepoints-and-clocks)
+A full description of the code can be found in the Teensy User WIKI: 
+https://github.com/TeensyUser/doc/wiki/fun-with-modern-cpp#start
 
 
 Example:
