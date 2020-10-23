@@ -13,14 +13,14 @@ This repository contains some helper functions and classes for the PJRC Teensy b
 - [attachYieldFunc](#attachyieldfunc)
   Add your own function to the yield call stack
 
-- [TeensySystemClock](#teensysystemclock)
-  Use the new c++11 chrono::system_clock with T4.x. Uses the T4.x RTC to feed the system_clock. Works with/without battery and provides a clock resolution of 1/32678kHz = 30.5µs.
+- [teensy_clock](#teensysystemclock)
+  Use the new c++11 ```std::chrono``` time system to implement a
+  `std::chrono` compliant clock which uses the cycle counter as time base. It counts time in 1.667ns steps (1/F_CPU)  since 0:00h 1970-01-01.
 
 **All functions and classes use the underlying Teensyduino mechanisms and bookkeeping. They can mixed with the standard ones.**
 
 # Installation:
 I didn't bother to make this a library. To use it just copy the `*.h` and  `*.cpp` files from the corresponding  subfolders of `/src` into your sketch to use them.
-
 
 -----
 
@@ -264,11 +264,17 @@ void loop(){
 }
 ```
 
-# TeensySystemClock
+# teensy_clock
 
-This extension enables the new (>c++11) `chrono::system_clock`. Usually the system_clock is fed by using some OS calls. In embedded systems one needs to define the static function `chrono::system_clock::now()` to enable the clock.
+This extension implements a clock compliant to the new (>c++11) `chrono::system_clock`.
 
-The tiny code in the TeensySystemClock folder uses the built in RTC of the T4.x boards to feed the system_clock. It doesn't interfere with the normal use of the RTC functions and works with or without battery. Other than the usual Teensy RTC functions the system_clock uses the full resolution of the RTC which is 1/32768 kHz = 30.5 µs.
+It uses a 64bit extension of the cycle counter where rollover is handled  by the periodic timer of the SNVS_HPCR module.
+
+The teensy_clock can be synced to the the built in RTC. It doesn't interfere with the normal use of the RTC functions and works with or without battery. Other than the usual Teensy RTC functions which are based on full seconds, the teensy_clock uses the full resolution of the cycle counter which is 1/600MHz = 1.6667 ns for a T4@ 600MHz.
+
+A full description of the code can be found in the Teensy User WIKI (
+https://github.com/TeensyUser/doc/wiki/durations-timepoints-and-clocks)
+
 
 Example:
 
@@ -284,7 +290,7 @@ void setup(){
 
 void loop()
 {
-    timePoint start = system_clock::now();                // generate two time points 1234ms apart
+    timePoint start = teensy_clock::now();                // generate two time points 1234ms apart
     delay(1234);
     timePoint stop = system_clock::now();
 
@@ -325,9 +331,9 @@ void setup(){
 
 void loop()
 {
-    auto start = system_clock::now();  // current time point
+    auto start = teensy_clock::now();  // current time point
 
-    while (system_clock::now() < (start + 1h + 30min)) // use chrono literals
+    while (teensy_clock::now() < (start + 1h + 30min)) // use chrono literals
     {
         yield(); // waiting...
     }
