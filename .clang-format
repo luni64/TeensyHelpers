@@ -16,6 +16,7 @@ IndentCaseLabels: true
 PointerAlignment: Left
 
 AlignTrailingComments: true
+AlignConsecutiveAssignments: true
 
 NamespaceIndentation: All
 FixNamespaceComments: false
@@ -34,7 +35,7 @@ BraceWrapping:
   AfterUnion: true
   AfterExternBlock: false
   AfterEnum: false
-  BeforeElse: false
+  BeforeElse: true
   SplitEmptyFunction: false
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
