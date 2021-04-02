@@ -20,7 +20,7 @@ namespace MMT
 
     BUS::operator uint8_t() const
     {
-        return (uint8_t) GPIO7_PSR >> 4;
+        return (uint8_t)(GPIO7_PSR >> 4);
     }
 
     void pinMode(const BUS& bus, int mode)
