@@ -1,4 +1,4 @@
-#include "MicroModTeensy.h"
+#include "MicroModT4.h"
 
 namespace MMT
 {
@@ -27,4 +27,6 @@ namespace MMT
     {
         bus.pinMode(mode);
     }
+
+    BUS& mmBus = BUS::getInstance();
 }
