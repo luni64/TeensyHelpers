@@ -12,15 +12,14 @@ namespace MMT
 
     void BUS::operator=(uint8_t value) const
     {
-        noInterrupts();
-        uint32_t maskedVal = GPIO7_PSR & ~(0xFF << 4);
-        GPIO7_DR           = maskedVal | ((uint32_t)value) << 4;
+        noInterrupts();      
+        GPIO7_DR           = (GPIO7_DR & ~(0xFF << 4)) | (((uint32_t)value) << 4);
         interrupts();
     }
 
     BUS::operator uint8_t() const
     {
-        return (uint8_t)(GPIO7_PSR >> 4);
+        return (uint8_t) (GPIO7_PSR >> 4);
     }
 
     void pinMode(const BUS& bus, int mode)
