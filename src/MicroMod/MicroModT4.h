@@ -105,5 +105,7 @@ namespace MMT
         BUS() {}
     };
 
+    extern void pinMode(const BUS& bus, int mode);
+
     extern BUS& mmBus;
 }
