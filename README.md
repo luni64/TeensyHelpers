@@ -72,7 +72,7 @@ void loop(){
 ```c++
 #include "IntervalTimerEx.h"
 
-class DeepThougth
+class DeepThought
 {
  public:
     void begin()
@@ -93,10 +93,10 @@ class DeepThougth
 
 //----------------------------
 
-DeepThougth deepThougth;
+DeepThought deepThought;
 
 void setup(){
-    deepThougth.begin();
+    deepThought.begin();
 }
 
 void loop(){
@@ -140,7 +140,7 @@ Called @	588 ms
 
 ### Embedding an IntervalTimer in a user class
 ```c++
-class DeepThougth
+class DeepThought
 {
  public:
     void begin()
@@ -155,15 +155,15 @@ class DeepThougth
 
     static void ISR(void* obj)
     {
-        DeepThougth* THIS = (DeepThougth*)obj;
+        DeepThought* THIS = (DeepThought*)obj;
         Serial.printf("The answer is %d\n", THIS->answer);
     }
 };
 
-DeepThougth deepThougth;
+DeepThougth deepThought;
 
 void setup(){
-    deepThougth.begin();
+    deepThought.begin();
 }
 
 void loop(){
