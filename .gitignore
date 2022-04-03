@@ -3,6 +3,7 @@
 # build
 .vsteensy/**
 .vscode/**
+cores/**
 makefile
 
 # Prerequisites

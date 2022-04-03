@@ -7,15 +7,20 @@ This repository contains some helper functions and classes for the PJRC Teensy b
 - [attachInterruptEx](#attachinterruptex)\
     Overloads the attachInterrupt function to allow attaching `std::function<void()>` callbacks.
 
-- [pinModeEx](#pinModeEx)
+- [pinModeEx](#pinModeEx)\
   Overloaded version of the pinMode function which can set the pin mode for a arbitrary long list of pins.
 
-- [attachYieldFunc](#attachyieldfunc)
+- [attachYieldFunc](#attachyieldfunc)\
   Add your own function to the yield call stack
 
-- [teensy_clock](#teensysystemclock)
+- [teensy_clock](#teensyclock)\
   Use the new c++11 ```std::chrono``` time system to implement a
   `std::chrono` compliant clock which uses the cycle counter as time base. It counts time in 1.667ns steps (1/F_CPU)  since 0:00h 1970-01-01.
+
+- [instanceList](#instancelist)\
+  Helper to automatically maintain a list of all active objects of a class and call
+  member functions on all of these objects. Helpful for example if you need to periodically tick all existing objects of a class.
+
 
 **All functions and classes use the underlying Teensyduino mechanisms and bookkeeping. They can mixed with the standard ones.**
 
@@ -272,7 +277,7 @@ It uses a 64bit extension of the cycle counter where rollover is handled  by the
 
 The teensy_clock can be synced to the the built in RTC. It doesn't interfere with the normal use of the RTC functions and works with or without battery. Other than the usual Teensy RTC functions which are based on full seconds, the teensy_clock uses the full resolution of the cycle counter which is 1/600MHz = 1.6667 ns for a T4@ 600MHz.
 
-A full description of the code can be found in the Teensy User WIKI: 
+A full description of the code can be found in the Teensy User WIKI:
 https://github.com/TeensyUser/doc/wiki/fun-with-modern-cpp#start
 
 
@@ -341,3 +346,175 @@ void loop()
     Serial.println("done");
 }
 ```
+
+# instanceList
+
+This helper class automatically maintains a list of all currently existing instances of a class regardless if they are constructed on the stack, the heap or in global space. The list of instances is accessible using standard c++ iterators.
+
+Possible use cases are classes where you need to periodically call a function on all objects.
+
+## Example
+Here a very simple example which demonstrates the usage of the ObjectListHelper class.
+
+Let's assume we want to define a `Blinker` class which periodically toggles a pin. Pin number and toggling period will be set in the constructor.
+
+To toggle the pin we implement a `blink()` member function. Whenever `blink()` is called, it simply checks an `elapsedMicros` variable to determine if it is time to toggle the pin. To get good performance, it is important to call `blink()` as often as possible.
+
+
+```c++
+#include "instanceList.h"
+
+class Blinker
+{
+ public:
+    Blinker(int _pin, unsigned ms)
+        : pin(_pin), period(ms * 1000)
+    {
+        pinMode(pin, OUTPUT);
+    }
+
+    void blink()
+    {
+        if (t > period)
+        {
+            digitalToggleFast(pin);
+            t -= period;
+        }
+    }
+
+ private:
+    elapsedMicros t;
+    unsigned pin, period;
+};
+```
+
+Usage
+```c++
+Blinker b(0,10); // toggles pin 0 every 10ms
+
+void setup()
+{
+}
+
+void loop()
+{
+    b.blink();
+}
+```
+So far, so good. However, if you need a lot of those Blinkers, the code can get messy quickly. Also, those Blinkers might as well be defined in a different file or in some functions and it can get difficult to keep track of  all the existing Blinkers.
+```c++
+Blinker b1(0,10);
+Blinker b2(7,100);
+Blinker b3(2,24);
+Blinker b4(13,500);
+
+void setup()
+{
+}
+
+void loop()
+{
+    b1.blink();
+    b2.blink();
+    b3.blink();
+    b4.blink();
+}
+```
+Of course, it would be a lot simpler if one could call the `blink()` function for all currently existing Blinker instances at once. Using the `instanceList` this can be done easily. All we need to do is derive the Blinker class from `instanceList`. To blink all instances we define a static function `tick()` which
+uses the list of instances provides and calls blink on each of them:
+```c++
+class Blinker : protected InstanceList<Blinker>  // <- derive from InstanceList
+{
+ public:
+    Blinker(int _pin, unsigned ms)
+        : pin(_pin), period(ms * 1000)
+    {
+        pinMode(pin, OUTPUT);
+    }
+
+    void blink()
+    {
+        if (t > period)
+        {
+            digitalToggleFast(pin);
+            t -= period;
+        }
+    }
+
+    static void tick()
+    {
+        for (Blinker& b : instanceList) // for each Blinker b in the instance list
+        {
+            b.blink();
+        }
+    }
+
+ private:
+    elapsedMicros t;
+    unsigned pin, period;
+};
+```
+
+Usage:
+```c++
+Blinker b0(0, 10);
+Blinker b1(1, 60);
+Blinker b2(2, 24);
+Blinker b3(3, 150);
+Blinker LED(13, 500);
+
+void setup()
+{
+}
+
+void loop()
+{
+    Blinker::tick();
+}
+```
+Now, we can add and remove Blinkers without having to to update the calls to blink() accordingly.
+
+You can use the instanceList for other things as well. Assume you want to print out information about all currently exisiting Blinker instances. Just add the following member function to the Blinker class:
+
+```c++
+static void InstanceInfo()
+{
+  for (Blinker& b : instanceList) // for each object in objectList
+  {
+     Serial.printf("pin: %2d, period (µs): %6d, address: %p\n", b.pin, b.period, &b);
+  }
+}
+```
+Then, you can print the information by:
+
+```c++
+Blinker b0(0, 10);
+Blinker b1(1, 60);
+Blinker b2(2, 24);
+Blinker b3(3, 150);
+Blinker LED(13, 500);
+
+void setup()
+{
+    while(!Serial){}
+    Blinker::InstanceInfo();
+}
+
+void loop()
+{
+    Blinker::tick();
+}
+```
+
+which prints:
+```
+pin: 13, period (µs): 500000, address: 0x20001864
+pin:  3, period (µs): 150000, address: 0x20001908
+pin:  2, period (µs):  24000, address: 0x200018f8
+pin:  1, period (µs):  60000, address: 0x200018e8
+pin:  0, period (µs):  10000, address: 0x200018d8
+```
+
+
+
+
