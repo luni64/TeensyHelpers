@@ -362,8 +362,6 @@ To toggle the pin we implement a `blink()` member function. Whenever `blink()` i
 
 
 ```c++
-#include "instanceList.h"
-
 class Blinker
 {
  public:
