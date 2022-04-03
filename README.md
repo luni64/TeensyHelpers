@@ -13,7 +13,7 @@ This repository contains some helper functions and classes for the PJRC Teensy b
 - [attachYieldFunc](#attachyieldfunc)\
   Add your own function to the yield call stack
 
-- [teensy_clock](#teensyclock)\
+- [teensy_clock](#teensy_clock)\
   Use the new c++11 ```std::chrono``` time system to implement a
   `std::chrono` compliant clock which uses the cycle counter as time base. It counts time in 1.667ns steps (1/F_CPU)  since 0:00h 1970-01-01.
 
