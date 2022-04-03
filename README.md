@@ -354,7 +354,7 @@ This helper class automatically maintains a list of all currently existing insta
 Possible use cases are classes where you need to periodically call a function on all objects.
 
 ## Example
-Here a very simple example which demonstrates the usage of the ObjectListHelper class.
+Here a very simple example which demonstrates the usage of the instanceList helper class.
 
 Let's assume we want to define a `Blinker` class which periodically toggles a pin. Pin number and toggling period will be set in the constructor.
 
