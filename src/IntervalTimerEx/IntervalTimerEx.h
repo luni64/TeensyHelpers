@@ -5,13 +5,13 @@
 #define USE_CPP11_CALLBACKS                    // comment out if you want to use the traditional void pointer pattern to pass state to callbacks
 
 #if defined(USE_CPP11_CALLBACKS)
-  #include <functional>
-  using callback_t = std::function<void()>;
-  using relay_t = void (*)();
+#include <functional>
+    using callback_t = std::function<void()>;
+    using relay_t = void (*)();
 
 #else
-  using callback_t = void (*)(void*);
-  using relay_t = void (*)();
+    using callback_t = void (*)(void*);
+    using relay_t = void (*)();
 #endif
 
 
@@ -45,18 +45,23 @@ class IntervalTimerEx : public IntervalTimer
 template <typename period_t>
 bool IntervalTimerEx::begin(std::function<void()> callback, period_t period)
 {
+    uint32_t primask;
+    asm volatile("mrs %0, primask\n\t cpsid i" : "=r"(primask)::"memory");
     for (index = 0; index < 4; index++) // find the next free slot
     {
         if (callbacks[index] == nullptr) // ->free slot
         {
-            if (IntervalTimer::begin(relays[index], period)) // we got a slot but we need to also get an actual timer
+            callbacks[index] = callback; // store callback before arming the timer
+            asm volatile("msr primask, %0" ::"r"(primask) : "memory");
+            if (IntervalTimer::begin(relays[index], period)) // now arm an actual timer
             {
-                callbacks[index] = callback; // if ok -> store callback
                 return true;
             }
+            callbacks[index] = nullptr; // arming failed -> release the slot
             return false;
         }
     }
+    asm volatile("msr primask, %0" ::"r"(primask) : "memory");
     return false; // can never happen if bookkeeping is ok
 }
 
